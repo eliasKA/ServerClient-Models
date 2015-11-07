@@ -13,13 +13,13 @@ public class Main {
 	
 	void start() {
 		Server server = new Server(PORT);
-		Client client = new Client(HOSTNAME,PORT);
+		//Client client = new Client(HOSTNAME,PORT);
 		
 		Thread serverThread = new Thread(server);
-		Thread clientThread = new Thread(client);
+		//Thread clientThread = new Thread(client);
 		
 		serverThread.start();
-		clientThread.start();
+		//clientThread.start();
 	}
 
 	public static void main(String[] args) {

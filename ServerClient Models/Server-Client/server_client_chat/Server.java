@@ -78,7 +78,7 @@ public class Server implements Runnable {
 					}
 					
 					reciever = message.substring(0, message.indexOf(' '));
-					message = message.substring(message.indexOf(' '));
+					message = message.substring(message.indexOf(' ')+1);
 					
 					toReciever = new DataOutputStream(userSockets.get(reciever).getOutputStream());
 					toReciever.writeBytes(line(message));

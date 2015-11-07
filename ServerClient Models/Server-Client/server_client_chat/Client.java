@@ -74,7 +74,7 @@ public class Client implements Runnable {
 				
 				fromServer.close();
 			} catch (Exception e) {
-				printLine("Client listening exception: " + e.getMessage());
+				printLine("Client listening exception: " + e.getMessage() + e.getLocalizedMessage());
 			}
 		
 		}
