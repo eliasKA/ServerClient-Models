@@ -2,14 +2,11 @@ package server_client_chat;
 
 public class Main {
 
-	static final int PORT = 20022;
+	static final int PORT = 20029;
 	static final String HOSTNAME =  "192.168.31.102"; 
+	
 	//alternate = "localhost";
 	//ipv6 = "2001:0:5ef5:79fb:405:6b6:a9a2:8d19"
-	
-	public Main() {
-		
-	}
 	
 	void start() {
 		Server server = new Server(PORT);

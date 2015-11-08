@@ -65,7 +65,7 @@ public class Client implements Runnable {
 				while(true){
 					message = fromServer.readLine();
 					
-					if(message.equals("exit")){
+					if(message.equals("Server exit")){
 						break;
 					}
 					
@@ -103,10 +103,6 @@ public class Client implements Runnable {
 				
 				while(true){
 					message = in.nextLine();
-					
-					if(message.equals("exit")){
-						break;
-					}
 					
 					toServer.writeBytes(line(message));
 				}

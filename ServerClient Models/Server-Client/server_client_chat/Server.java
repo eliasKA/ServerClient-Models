@@ -2,6 +2,7 @@ package server_client_chat;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,11 +11,13 @@ import java.util.Hashtable;
 public class Server implements Runnable {
 	int port;
 	boolean exit;
-	Hashtable<String, Socket> userSockets;
+	Hashtable<String, ClientCommunicator> userSockets;
+	Hashtable<ClientCommunicator, String> socketUsers;
 
 	public Server(int port) {
 		exit = false;
-		userSockets = new Hashtable<String, Socket>();
+		userSockets = new Hashtable<String, ClientCommunicator>();
+		socketUsers = new Hashtable<ClientCommunicator,String>();
 		this.port = port;
 	}
 
@@ -44,7 +47,7 @@ public class Server implements Runnable {
 
 			serverSocket.close();
 		} catch (Exception e) {
-			printLine("Server exception: " + e.getMessage() + " " + e.getStackTrace().toString());
+			printLine("Server exception: " + e.getMessage());
 		}
 	}
 
@@ -58,35 +61,32 @@ public class Server implements Runnable {
 		void start() {
 			try {
 				String username, message, reciever;
-				DataOutputStream toReciever;
 				
-				BufferedReader fromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-				DataOutputStream toClient = new DataOutputStream(clientSocket.getOutputStream());
+				ClientCommunicator recieverIO; 
+				ClientCommunicator clientIO = new ClientCommunicator(clientSocket);
 				
-				username = fromClient.readLine();
-				userSockets.put(username, clientSocket);
-				toClient.writeBytes(line("Username accepted!"));
+				username = clientIO.readLine();
+				clientIO.writeLine(line("Username accepted!"));
+				
+				userSockets.put(username, clientIO );
+				socketUsers.put(clientIO, username);
 				
 				while (true) {
-					message = fromClient.readLine();
+					message = clientIO.readLine();
 					
 					if(message.equals("exit")){
-						exit = true;
-						toClient.writeBytes(line("exit"));
-						
+						clientIO.writeLine(line("Server exit"));
 						break;
 					}
 					
 					reciever = message.substring(0, message.indexOf(' '));
 					message = message.substring(message.indexOf(' ')+1);
 					
-					toReciever = new DataOutputStream(userSockets.get(reciever).getOutputStream());
-					toReciever.writeBytes(line(message));
-					toReciever.close();
+					recieverIO = userSockets.get(reciever);
+					recieverIO.writeLine(line(socketUsers.get(clientIO) + "\t| " + message));
 				}
 
-				fromClient.close();
-				clientSocket.close();
+				clientIO.closeConnection();
 			} catch (Exception e) {
 				printLine("Server exception: " + e.getMessage());
 			}
@@ -100,10 +100,42 @@ public class Server implements Runnable {
 
 	}
 
+	private class ClientCommunicator{
+		private Socket theSocket;
+		private BufferedReader inComing;
+		private DataOutputStream outGoing;
+		
+		public ClientCommunicator(Socket theSocket) {
+			try{
+				this.theSocket =  theSocket;
+				inComing = new BufferedReader(new InputStreamReader(theSocket.getInputStream()));
+				outGoing = new DataOutputStream(theSocket.getOutputStream());
+			}catch(Exception e){
+				printLine("Client construction exception: " + e.getMessage());
+			}
+		}
+		
+		public String readLine() throws IOException{
+			return inComing.readLine();
+		}
+		
+		public void writeLine(String line) throws IOException{
+			outGoing.writeBytes(line);
+		}
+		
+		public void closeConnection() throws IOException{
+			inComing.close();
+			outGoing.close();
+			theSocket.close();
+		}
+	}
+	
 	@Override
 	public void run() {
 		printLine("Server running");
 		start();
 	}
 
+	
+	
 }
